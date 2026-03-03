@@ -29,6 +29,7 @@ sky = SubResource("Sky_sa387")
 sky_rotation = Vector3(0, 1.5708, 0)
 ambient_light_color = Color(0.38170326, 0.38170323, 0.38170323, 1)
 tonemap_mode = 3
+tonemap_white = 2.0
 ssr_fade_in = 1.6818e-05
 ssr_fade_out = 0.5
 ssr_depth_tolerance = 0.11

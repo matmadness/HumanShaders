@@ -12,6 +12,8 @@ and is built upon https://github.com/RustyRoboticsBV/GodotStandardLightShader
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx, sss_mode_skin;
 
+global uniform int frame_index;
+
 group_uniforms albedo;
 uniform vec4 albedo : source_color = vec4(1.);
 uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
@@ -89,12 +91,12 @@ vec3 normal_blending(vec3 b, vec3 d) {
 	return vec3(b.xy + d.xy - 0.5, b.z);
 }
 
-vec3 overlay(vec3 base, vec3 blend){
+vec3 overlay(vec3 base, vec3 blend) {
 	vec3 limit = step(0.5, base);
 	return mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), limit);
 }
 
-vec3 custom_normal(vec3 normal_map){
+vec3 custom_normal(vec3 normal_map) {
 	normal_map = mix(vec3(0.5,0.5,1.0), normal_map, normal_strength);
 	vec3 normal_tangent = vec3(
 		normal_map.r * 2.0 - 1.0,  // X-axis (unchanged)
@@ -104,10 +106,27 @@ vec3 custom_normal(vec3 normal_map){
 	return normalize(TBN * normal_tangent);
 }
 
-float ScreenSpaceDither12(vec2 vScreenPos, float time){
-	float vDither = dot( vec2( 171.0, 231.0 ), vScreenPos.xy + time); 
-	return fract(vDither / 53.2);
+float ign_noise(vec2 uv) {
+	return fract(52.9829189 * fract(dot(uv, vec2(0.06711056, 0.00583715))));
 }
+
+float halton(int index, int base) {
+	float f = 1.0;
+	float result = 0.0;
+	
+	while (index > 0) {
+		f /= float(base);
+		result += f * float(index % base);
+		index = index / base;
+	}
+	
+	return result;
+}
+
+vec2 halton2(int frame) {
+	return vec2(halton(frame, 2), halton(frame, 4));
+}
+
 void fragment() {
 	vec2 base_uv = UV;
 	TBN = mat3(TANGENT, -BINORMAL, NORMAL);
@@ -182,12 +201,11 @@ void fragment() {
 				sss_strength_value += (sss_tex * 2.);
 			}
 			if (use_noise){
-				vec2 ts = vec2(textureSize(texture_sss_noise, 0)) * 0.85;
-				vec2 dither_uv = mod(FRAGCOORD.xy, ts) / ts + (TIME * 2.5);
-				vec2 tiling_screen_uv = FRAGCOORD.xy / (0.64 * -1.);
-				float noise = 3.* texture(texture_sss_noise, dither_uv).r;// + vec2(1000. * TIME)).r;
-				//noise = 2.0 * ScreenSpaceDither12(FRAGCOORD.xy, TIME * .50);
-				sss_strength_value *= noise;
+				vec2 pixel_uv = floor(FRAGCOORD.xy);
+				vec2 frame_jitter = halton2(frame_index % 1024);
+				float noise = ign_noise(pixel_uv + frame_jitter * 1024.0);
+				//noise = ign_noise(pixel_uv);
+				sss_strength_value *= noise * 2.0;
 				//ALBEDO = vec3(noise);
 			}
 			SSS_STRENGTH = sss_strength_value * texture(ambient_occlusion_texture, base_uv).r * smooth_depth;
@@ -195,7 +213,10 @@ void fragment() {
 		//ALBEDO = vec3(smooth_depth);
 		//float sss_depth = 1. - pow(clamp(world_camera.z,0.,1.), 0.5);
 	}
-
+	vec2 pixel_uv = floor(FRAGCOORD.xy);
+	vec2 frame_jitter = halton2(frame_index % 1024);
+	//ALBEDO = vec3(ign_noise(pixel_uv + frame_jitter * 1024.0));
+	//ALBEDO = vec3(ign_noise(pixel_uv));
 }
 float DistributionGGX(float cos_theta_m, float alpha){
 	float alpha2 = alpha * alpha;

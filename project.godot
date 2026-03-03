@@ -73,3 +73,10 @@ environment/subsurface_scattering/subsurface_scattering_quality=2
 environment/volumetric_fog/volume_size=256
 anti_aliasing/quality/use_debanding=true
 lights_and_shadows/positional_shadow/atlas_size=16384
+
+[shader_globals]
+
+frame_index={
+"type": "int",
+"value": 0
+}

@@ -23,3 +23,6 @@ func log_message(message: String) -> void:
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
+		
+func _process(_delta: float) -> void:
+	RenderingServer.global_shader_parameter_set("frame_index", Engine.get_frames_drawn() * 2.0)
