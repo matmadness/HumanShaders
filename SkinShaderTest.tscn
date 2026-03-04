@@ -230,7 +230,7 @@ visible = false
 script = ExtResource("14_yjmae")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup2"]
-transform = Transform3D(0.504799, -0.513473, 0.693919, 2.32283e-09, 0.803857, 0.594823, -0.863237, -0.300266, 0.405786, 0, 0, 0)
+transform = Transform3D(0.50479895, -0.513473, 0.693919, 2.3228297e-09, 0.8038569, 0.59482276, -0.8632369, -0.30026588, 0.4057861, 0, 0, 0)
 light_energy = 4.0
 shadow_enabled = true
 shadow_bias = 0.001
@@ -260,6 +260,7 @@ directional_shadow_max_distance = 4.0
 
 [node name="LightingSetup3" type="Node3D" parent="SubViewportContainer/SubViewport/Lighting"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0632671)
+visible = false
 script = ExtResource("14_yjmae")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup3"]
@@ -272,6 +273,7 @@ shadow_blur = 2.0
 [node name="SpotLight3D" type="SpotLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup3"]
 transform = Transform3D(0.81815, -0.40659, 0.40659, 0, 0.707107, 0.707107, -0.575005, -0.578519, 0.578519, 0.348003, 0.521764, 0.445228)
 light_energy = 0.5
+light_specular = 1.0
 shadow_enabled = true
 shadow_bias = 0.0
 shadow_normal_bias = 2.0
@@ -281,6 +283,7 @@ shadow_blur = 4.0
 [node name="OmniLight3D2" type="OmniLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup3"]
 transform = Transform3D(0.644124, 0.540881, -0.540881, 6.18173e-08, -0.707107, -0.707107, -0.764921, 0.455464, -0.455465, -0.532522, 0.335, -1.15571)
 light_energy = 0.5
+light_specular = 0.1
 shadow_enabled = true
 shadow_bias = 0.005
 shadow_blur = 1.649
@@ -323,6 +326,43 @@ shadow_enabled = true
 shadow_bias = 0.001
 shadow_blur = 3.0
 spot_range = 2.0
+
+[node name="LightingSetup6" type="Node3D" parent="SubViewportContainer/SubViewport/Lighting"]
+script = ExtResource("14_yjmae")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup6"]
+transform = Transform3D(0.50479895, -0.513473, 0.693919, 2.3228297e-09, 0.8038569, 0.59482276, -0.8632369, -0.30026588, 0.4057861, 0, 0, 0)
+light_energy = 4.0
+light_specular = 0.0
+shadow_enabled = true
+shadow_bias = 0.001
+shadow_opacity = 0.85
+shadow_blur = 4.0
+directional_shadow_mode = 0
+directional_shadow_split_2 = 0.3
+directional_shadow_split_3 = 0.6
+directional_shadow_max_distance = 4.0
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup6"]
+transform = Transform3D(0.1554, -0.905919, -0.393905, 7.61903e-09, -0.398749, 0.91706, -0.987852, -0.142511, -0.0619656, 0, 0, 0)
+light_color = Color(0.587668, 0.686282, 0.761403, 1)
+light_specular = 0.0
+shadow_enabled = true
+shadow_bias = 0.001
+shadow_blur = 6.0
+directional_shadow_mode = 0
+directional_shadow_max_distance = 4.0
+
+[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup6"]
+transform = Transform3D(0.933205, 0.337674, 0.122903, -5.17512e-09, 0.34202, -0.939693, -0.359346, 0.876925, 0.319175, 0, 0, 0)
+light_color = Color(0.85, 0.7706667, 0.71400005, 1)
+light_energy = 0.8
+light_specular = 0.0
+shadow_enabled = true
+shadow_bias = 0.001
+shadow_blur = 6.0
+directional_shadow_mode = 0
+directional_shadow_max_distance = 4.0
 
 [node name="UI" type="Control" parent="."]
 unique_name_in_owner = true
@@ -421,6 +461,13 @@ custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "5"
+
+[node name="6" type="Button" parent="UI/Panel/MarginContainer/ScrollContainer/VBoxContainer/LightingSetupButtons"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "6
+"
 
 [node name="CastShadows" type="CheckButton" parent="UI/Panel/MarginContainer/ScrollContainer/VBoxContainer"]
 unique_name_in_owner = true

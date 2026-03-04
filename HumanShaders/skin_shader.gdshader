@@ -80,6 +80,7 @@ varying float ao;
 varying float linear_depth;
 varying float smooth_depth;
 varying float sss_tex;
+varying vec3 RAW_NORMAL;
 
 void vertex() {
 	UV = UV * uv1_scale.xy + uv1_offset.xy;
@@ -130,6 +131,7 @@ vec2 halton2(int frame) {
 void fragment() {
 	vec2 base_uv = UV;
 	TBN = mat3(TANGENT, -BINORMAL, NORMAL);
+	RAW_NORMAL = NORMAL;
 
 	//Raw depth value:
 	float depth_raw = FRAGCOORD.z;
@@ -144,8 +146,6 @@ void fragment() {
 	smooth_depth = smoothstep(0.0, 0.6, linear_depth);
 
 	sss_tex = texture(texture_translucency, base_uv).b;
-
-	//float fresnel = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0 );
 
 	micro_detail = texture(texture_micro_detail, base_uv * micro_detail_scale);
 	ao = texture(texture_normal, base_uv).b;
@@ -206,18 +206,12 @@ void fragment() {
 				float noise = ign_noise(pixel_uv + frame_jitter * 1024.0);
 				//noise = ign_noise(pixel_uv);
 				sss_strength_value *= noise * 2.0;
-				//ALBEDO = vec3(noise);
 			}
 			SSS_STRENGTH = sss_strength_value * texture(ambient_occlusion_texture, base_uv).r * smooth_depth;
 		}
-		//ALBEDO = vec3(smooth_depth);
-		//float sss_depth = 1. - pow(clamp(world_camera.z,0.,1.), 0.5);
 	}
-	vec2 pixel_uv = floor(FRAGCOORD.xy);
-	vec2 frame_jitter = halton2(frame_index % 1024);
-	//ALBEDO = vec3(ign_noise(pixel_uv + frame_jitter * 1024.0));
-	//ALBEDO = vec3(ign_noise(pixel_uv));
 }
+
 float DistributionGGX(float cos_theta_m, float alpha){
 	float alpha2 = alpha * alpha;
 	float d = 1.0 + (alpha2 - 1.0) * cos_theta_m * cos_theta_m;
@@ -239,6 +233,37 @@ float SchlickFresnel(float u){
 	return m2 * m2 * m;
 }
 
+float DiffuseBurley(float NdotL, float NdotV, float LdotH, float linear_roughness) {
+    // Burley 2012, "Physically-Based Shading at Disney"
+	float f90 = 2.0 * linear_roughness * LdotH * LdotH - 0.5;
+	float l_scatter = 1.0 + f90 * SchlickFresnel(NdotL);
+	float v_scatter = 1.0 + f90 * SchlickFresnel(NdotV);
+	return v_scatter * l_scatter * NdotL * 0.318309;
+}
+
+float DiffuseBurleySkin(sampler2D normal_map, vec2 uv, float NdotL, float NdotV, float LdotH, float linear_roughness) {
+    // Burley 2012, "Physically-Based Shading at Disney"
+	//Calculate custom diffuse normal (dn):
+	float s = skin_smoothness;
+	vec3 dn_r = custom_normal(textureLod(texture_normal, uv, (1.*s)).rgb);
+	vec3 dn_g = custom_normal(textureLod(texture_normal, uv, (0.8*s)).rgb);
+	vec3 dn_b = custom_normal(textureLod(texture_normal, uv, (0.7*s)).rgb);
+		
+	//Include micro normals in the mix:
+	vec3 m_normal = texture(texture_micro_detail, uv * micro_detail_scale).rgb;
+	m_normal = mix(vec3(.5,.5,1.), vec3(m_normal.xy, 1.), micro_normal_strength);
+	
+	dn_g = normal_blending(dn_g, m_normal);
+	dn_b = normal_blending(dn_b, m_normal);
+	////
+	
+	float f90 = 2.0 * linear_roughness * LdotH * LdotH - 0.5;
+	float l_scatter = 1.0 + f90 * SchlickFresnel(NdotL);
+	float v_scatter = 1.0 + f90 * SchlickFresnel(NdotV);
+	return v_scatter * l_scatter * NdotL * (1.0 / PI);
+}
+
+/**/
 void light()
 {
 	// Calculate some vectors.
@@ -262,7 +287,7 @@ void light()
 
 	if (!old_lightwarp_fallof){ //Better SSS aproximation:
 
-		//Calculate custom normal:
+		//Calculate custom diffuse normal (dn):
 		float s = skin_smoothness;
 		vec3 dn_r = custom_normal(textureLod(texture_normal, UV, (1.*s) * normal_depth).rgb);
 		vec3 dn_g = custom_normal(textureLod(texture_normal, UV, (0.8*s) * normal_depth).rgb);
@@ -276,17 +301,28 @@ void light()
 		dn_b = normal_blending(dn_b, m_normal);
 		////
 		
-		float sf = skin_fallof_smoothness;
+		float spec_smoothness = min(SPECULAR_AMOUNT * 0.5 + 0.5, 1.0);
+		float sf = skin_fallof_smoothness / spec_smoothness;
 		
 		float wrapped_r = smoothstep(0.4 /sf, 1.2 *sf, dot(dn_r, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_g = smoothstep(0.425 /sf, 1.2 *sf, dot(dn_g, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_b = smoothstep(0.44 /sf, 1.2 *sf, dot(dn_b, LIGHT) * wrap + (1.0-wrap));
-		vec3 wrapped_rgb = vec3(wrapped_r, wrapped_g, wrapped_b);
+		vec3 wrapped_rgb = vec3(wrapped_r, wrapped_g, wrapped_b) * sf;
 		if (use_ambient_occlusion){
 			wrapped_rgb *= (ao * ao_block_light + (1.-ao_block_light));
 		}
+		
+		float RNdotL = max(dot(RAW_NORMAL, LIGHT), 0.0);
+		RNdotL = mix (RNdotL, RNdotL * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
+		float RNdotV = max(dot(RAW_NORMAL, VIEW), 0.0);
+		//RNdotV = mix (RNdotV, RNdotV * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
+		
+		float f90 = 3.0 * roughness * LdotH * LdotH - 0.5;
+		float l_scatter = 1.0 + f90 * SchlickFresnel(RNdotL);
+		float v_scatter = 1.0 + f90 * SchlickFresnel(RNdotV) * 3.0;
+		float combined = v_scatter * l_scatter;
 
-		diff_light = wrapped_rgb;
+		diff_light = wrapped_rgb * combined;
 	}
 	else{ //Lightwarp technique:
 		vec3 diff_normal_map = mix(
@@ -302,7 +338,10 @@ void light()
 		}
 		diff_light = lw;
 	}
-
+	
+	//diff_light += vec3(DiffuseBurleySkin(texture_normal, UV, NdotL, NdotV, LdotH, ROUGHNESS));
+	//diff_light += clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * ATTENUATION * (lightColor / (TAU* 2.0));
+	
 	//Tint shadow penumbra:
 	vec3 att = overlay(min(vec3(ATTENUATION), 1.), vec3(1.2,.8,.6)) * max(ATTENUATION, 0.5);
 	if (tinted_shadow_penumbra){att = att;} else{att = vec3(ATTENUATION);}
@@ -318,27 +357,36 @@ void light()
 
 		DIFFUSE_LIGHT += translucent;
 	}
-
+	
+	// Specular light (Schlick-GGX).
 	vec3 f0 = SchlickBaseReflectivity();
 	float LdotH5 = SchlickFresnel(LdotH);
 	float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
 	vec3 F = f0 + (f90 - f0) * LdotH5;
-
-	// Specular light (Schlick-GGX).
+	
 	float ggxAlpha = ROUGHNESS * ROUGHNESS;
 	float D = DistributionGGX(NdotH, ggxAlpha);
 	float G = GeometryGGX(NdotL, NdotV, ggxAlpha);
-
-	vec3 specularBRDF = max(NdotL * D * G * F, 0.0);
-	if (double_specularity){
-		float D2 = DistributionGGX(NdotH, ggxAlpha + .3);
-		float G2 = GeometryGGX(NdotL, NdotV, ggxAlpha + .3);
-
-		vec3 specularBRDF2 = max(NdotL * D2 * G2 * F, 0.0);
-		specularBRDF = mix(specularBRDF2, specularBRDF, .6) * 2.;
+	
+	vec3 specularBRDF;
+	
+	if (!double_specularity) {
+		specularBRDF = max(NdotL * D * G * F, 0.0);
 	}
-	SPECULAR_LIGHT += specularBRDF * LIGHT_COLOR * ATTENUATION;
+	else {
+		float D = DistributionGGX(NdotH, ggxAlpha + .15);
+		specularBRDF = max(NdotL * D * G * F, 0.0) * 2.0;
+		
+		float D2 = DistributionGGX(NdotH, ggxAlpha * 0.5);
+		vec3 specularBRDF2 = max(NdotL * D2 * G * F, 0.0);
+		
+		specularBRDF = (specularBRDF + specularBRDF2) / 2.0;
+	}
+	SPECULAR_LIGHT += specularBRDF * LIGHT_COLOR * ATTENUATION * (SPECULAR_AMOUNT + 0.1);
+	
 	if (use_ambient_occlusion){
 		SPECULAR_LIGHT *= ao * ao_block_light + (1.-ao_block_light);
 	}
+	
+	//SPECULAR_LIGHT = vec3(0.0);
 }
