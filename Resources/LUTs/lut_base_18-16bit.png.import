@@ -2,16 +2,16 @@
 
 importer="3d_texture"
 type="CompressedTexture3D"
-uid="uid://ydspf6qhmnyj"
-path="res://.godot/imported/lut_1024x32_cinematic1.png-b8577757e19c934130fa0e57159df187.ctex3d"
+uid="uid://baegvqkyx27lp"
+path="res://.godot/imported/lut_base_18-16bit.png-6e2f3b229113d6f1d28a291894f17c2a.ctex3d"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Resources/LUTs/lut_1024x32_cinematic1.png"
-dest_files=["res://.godot/imported/lut_1024x32_cinematic1.png-b8577757e19c934130fa0e57159df187.ctex3d"]
+source_file="res://Resources/LUTs/lut_base_18-16bit.png"
+dest_files=["res://.godot/imported/lut_base_18-16bit.png-6e2f3b229113d6f1d28a291894f17c2a.ctex3d"]
 
 [params]
 
@@ -24,5 +24,5 @@ compress/hdr_compression=1
 compress/channel_pack=0
 mipmaps/generate=false
 mipmaps/limit=-1
-slices/horizontal=32
+slices/horizontal=18
 slices/vertical=1

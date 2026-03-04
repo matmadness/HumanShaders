@@ -169,11 +169,12 @@ void fragment() {
 	//float spec = max(dot(NORMAL, LIGHT_VERTEX * LIGHT_VERTEX), 0.0);
 
 	//ALBEDO = vec3(1.);
-	SPECULAR = clamp(specular, 0.,1.);
+	
+	//SPECULAR = clamp(specular, 0.,1.);
 	if (use_ambient_occlusion){
 		SPECULAR *= ao;
 	}
-
+	
 	vec4 roughness_texture_channel = vec4(0.0, 1.0, 0.0, 0.0);
 	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
 	ROUGHNESS = clamp(roughness_tex * roughness, 0.,1.);
@@ -301,21 +302,21 @@ void light()
 		dn_b = normal_blending(dn_b, m_normal);
 		////
 		
-		float spec_smoothness = min(SPECULAR_AMOUNT * 0.5 + 0.5, 1.0);
-		float sf = skin_fallof_smoothness / spec_smoothness;
+		float spec_smoothness = min(SPECULAR_AMOUNT * 0.75 + 0.25, 1.0);
+		float sf = skin_fallof_smoothness / (spec_smoothness);
 		
 		float wrapped_r = smoothstep(0.4 /sf, 1.2 *sf, dot(dn_r, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_g = smoothstep(0.425 /sf, 1.2 *sf, dot(dn_g, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_b = smoothstep(0.44 /sf, 1.2 *sf, dot(dn_b, LIGHT) * wrap + (1.0-wrap));
-		vec3 wrapped_rgb = vec3(wrapped_r, wrapped_g, wrapped_b) * sf;
+		vec3 wrapped_rgb = vec3(wrapped_r, wrapped_g, wrapped_b) * mix(sf, sf * sf, 0.5);
 		if (use_ambient_occlusion){
 			wrapped_rgb *= (ao * ao_block_light + (1.-ao_block_light));
 		}
 		
-		float RNdotL = max(dot(RAW_NORMAL, LIGHT), 0.0);
+		float RNdotL = clamp(dot(RAW_NORMAL, LIGHT), 0.0, 1.0);
 		RNdotL = mix (RNdotL, RNdotL * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
-		float RNdotV = max(dot(RAW_NORMAL, VIEW), 0.0);
-		//RNdotV = mix (RNdotV, RNdotV * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
+		float RNdotV = clamp(dot(RAW_NORMAL, VIEW), 0.0, 1.0);
+		RNdotV = mix (RNdotV, RNdotV * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
 		
 		float f90 = 3.0 * roughness * LdotH * LdotH - 0.5;
 		float l_scatter = 1.0 + f90 * SchlickFresnel(RNdotL);

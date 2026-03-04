@@ -1,7 +1,7 @@
-[gd_scene load_steps=19 format=3 uid="uid://cx3ke36luq2sr"]
+[gd_scene load_steps=21 format=3 uid="uid://cx3ke36luq2sr"]
 
 [ext_resource type="ArrayMesh" uid="uid://dgaq4f263bcpf" path="res://Models/HumanHead/InfiniteScan/Infinite-Level_02.OBJ" id="1_ahks5"]
-[ext_resource type="Texture2D" uid="uid://bcnq4b8ig3q2t" path="res://Resources/LUTs/pp_colorcorrection_1.tres" id="1_qfyww"]
+[ext_resource type="CompressedTexture3D" uid="uid://dcnd3shytq2nh" path="res://Resources/LUTs/lut_fakelinear3_52-16bit.png" id="1_qfyww"]
 [ext_resource type="Texture2D" uid="uid://bia04147fvbed" path="res://Resources/HDRI/reading_room_4k.hdr" id="1_xhaxv"]
 [ext_resource type="Script" uid="uid://b40e0c3m2d0ks" path="res://Scripts/Visualizer/auto_rotate.gd" id="2_jqh26"]
 [ext_resource type="Script" uid="uid://3fqhmlbfjxu8" path="res://Scripts/Visualizer/head_visuas.gd" id="4_6cvmo"]
@@ -24,12 +24,12 @@ sky_material = SubResource("PanoramaSkyMaterial_hqxp2")
 [sub_resource type="Environment" id="Environment_styh2"]
 background_mode = 2
 background_color = Color(0.654232, 0.654232, 0.654232, 1)
-background_energy_multiplier = 0.5
 sky = SubResource("Sky_sa387")
 sky_rotation = Vector3(0, 1.5708, 0)
-ambient_light_color = Color(0.38170326, 0.38170323, 0.38170323, 1)
-tonemap_mode = 3
-tonemap_white = 2.0
+ambient_light_sky_contribution = 0.5
+tonemap_mode = 4
+tonemap_exposure = 1.2
+tonemap_white = 16.0
 ssr_fade_in = 1.6818e-05
 ssr_fade_out = 0.5
 ssr_depth_tolerance = 0.11
@@ -40,13 +40,13 @@ ssil_normal_rejection = 0.8
 glow_enabled = true
 glow_levels/1 = 1.0
 glow_levels/2 = 1.0
-glow_levels/4 = 1.0
 glow_levels/6 = 1.0
-glow_levels/7 = 1.0
 glow_normalized = true
 glow_intensity = 0.5
-glow_blend_mode = 1
-glow_hdr_scale = 1.4
+glow_strength = 1.2
+glow_blend_mode = 4
+glow_hdr_threshold = 0.85
+glow_hdr_scale = 0.2
 fog_light_energy = 0.83
 fog_sun_scatter = 1.0
 fog_density = 0.2079
@@ -65,6 +65,14 @@ dof_blur_amount = 0.2
 auto_exposure_min_sensitivity = 12.0
 auto_exposure_max_sensitivity = 550.0
 
+[sub_resource type="SphereMesh" id="SphereMesh_qfyww"]
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5ifdl"]
+shading_mode = 0
+albedo_color = Color(4.244969, 0.576749, 0.576749, 1)
+
 [node name="Node3D" type="Node3D"]
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
@@ -77,7 +85,10 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 handle_input_locally = false
+msaa_3d = 2
+screen_space_aa = 2
 use_debanding = true
+scaling_3d_mode = 0
 scaling_3d_scale = 1.0
 anisotropic_filtering_level = 4
 positional_shadow_atlas_size = 16384
@@ -157,6 +168,12 @@ surface_material_override/0 = ExtResource("8_fw5fm")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.436, -0.051)
 visible = false
 
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16358545, 0.22852859, 0)
+visible = false
+mesh = SubResource("SphereMesh_qfyww")
+surface_material_override/0 = SubResource("StandardMaterial3D_5ifdl")
+
 [node name="Lighting" type="Node3D" parent="SubViewportContainer/SubViewport" node_paths=PackedStringArray("world_env")]
 script = ExtResource("2_jqh26")
 use_right_click = true
@@ -164,7 +181,6 @@ rotation_sensitivity = 0.2
 world_env = NodePath("../WorldEnvironment")
 
 [node name="LightingSetup1" type="Node3D" parent="SubViewportContainer/SubViewport/Lighting"]
-visible = false
 script = ExtResource("14_yjmae")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup1"]
@@ -328,6 +344,7 @@ shadow_blur = 3.0
 spot_range = 2.0
 
 [node name="LightingSetup6" type="Node3D" parent="SubViewportContainer/SubViewport/Lighting"]
+visible = false
 script = ExtResource("14_yjmae")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup6"]
@@ -346,7 +363,7 @@ directional_shadow_max_distance = 4.0
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/Lighting/LightingSetup6"]
 transform = Transform3D(0.1554, -0.905919, -0.393905, 7.61903e-09, -0.398749, 0.91706, -0.987852, -0.142511, -0.0619656, 0, 0, 0)
 light_color = Color(0.587668, 0.686282, 0.761403, 1)
-light_specular = 0.0
+light_specular = 0.1
 shadow_enabled = true
 shadow_bias = 0.001
 shadow_blur = 6.0
@@ -357,7 +374,7 @@ directional_shadow_max_distance = 4.0
 transform = Transform3D(0.933205, 0.337674, 0.122903, -5.17512e-09, 0.34202, -0.939693, -0.359346, 0.876925, 0.319175, 0, 0, 0)
 light_color = Color(0.85, 0.7706667, 0.71400005, 1)
 light_energy = 0.8
-light_specular = 0.0
+light_specular = 0.1
 shadow_enabled = true
 shadow_bias = 0.001
 shadow_blur = 6.0

@@ -2,16 +2,16 @@
 
 importer="3d_texture"
 type="CompressedTexture3D"
-uid="uid://ydspf6qhmnyj"
-path="res://.godot/imported/lut_1024x32_cinematic1.png-b8577757e19c934130fa0e57159df187.ctex3d"
+uid="uid://jca3t2335gm8"
+path="res://.godot/imported/lut_1024x32_base.png-6903c41c31a6182f96a72f7c53b7e315.ctex3d"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Resources/LUTs/lut_1024x32_cinematic1.png"
-dest_files=["res://.godot/imported/lut_1024x32_cinematic1.png-b8577757e19c934130fa0e57159df187.ctex3d"]
+source_file="res://Resources/LUTs/lut_1024x32_base.png"
+dest_files=["res://.godot/imported/lut_1024x32_base.png-6903c41c31a6182f96a72f7c53b7e315.ctex3d"]
 
 [params]
 
