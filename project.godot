@@ -8,11 +8,16 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Human Shaders (Public)"
+config/tags=PackedStringArray("rendering", "shaders")
 run/main_scene="res://SkinShaderTest.tscn"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/image="uid://ct6xo0he0ieiu"
 config/icon="res://icon.svg"
@@ -63,16 +68,16 @@ environment/ssao/blur_passes=1
 environment/ssil/quality=3
 environment/ssil/half_size=false
 environment/ssil/blur_passes=1
+anti_aliasing/quality/use_debanding=true
 scaling_3d/mode=2
 scaling_3d/scale=0.9
 scaling_3d/fsr_sharpness=0.5
 textures/default_filters/texture_mipmap_bias=-0.2
 environment/glow/upscale_mode=0
-environment/screen_space_reflection/roughness_quality=2
 environment/subsurface_scattering/subsurface_scattering_quality=2
 environment/volumetric_fog/volume_size=256
-anti_aliasing/quality/use_debanding=true
 lights_and_shadows/positional_shadow/atlas_size=16384
+environment/screen_space_reflection/roughness_quality=2
 
 [shader_globals]
 

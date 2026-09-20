@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=9 format=3 uid="uid://bdvox0sbi6suh"]
+[gd_resource type="ShaderMaterial" load_steps=8 format=3 uid="uid://bdvox0sbi6suh"]
 
 [ext_resource type="Shader" uid="uid://rwmp12dnfv7m" path="res://HumanShaders/skin_shader.gdshader" id="1_8pra8"]
 [ext_resource type="Texture2D" uid="uid://bg5wg2pb2tpm7" path="res://HumanShaders/Resources/lightwarp_skin1.tres" id="2_ec3fj"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://bknec6nspete6" path="res://Models/Monster/monster_1_Ch30_1001_Glossiness.png" id="3_16kyu"]
 [ext_resource type="Texture2D" uid="uid://q081egd4y1v" path="res://HumanShaders/Resources/MicroDetail/skin_micro_nrm_ao.png" id="3_wd0um"]
 [ext_resource type="Texture2D" uid="uid://bj8lru7dy5a7f" path="res://Models/Monster/monster_1_Ch30_1001_Normal.png" id="4_ec3fj"]
-[ext_resource type="Texture2D" uid="uid://bmxxqd0d8ioy3" path="res://HumanShaders/Resources/InterleavedGradientNoise.png" id="6_4376w"]
 [ext_resource type="Texture2D" uid="uid://d28htgdgv762y" path="res://HumanShaders/Resources/translucency_gradient.tres" id="8_4376w"]
 
 [resource]
@@ -38,7 +37,6 @@ shader_parameter/skin_fallof_smoothness = 1.0
 shader_parameter/tinted_shadow_penumbra = false
 shader_parameter/old_lightwarp_fallof = false
 shader_parameter/lightwarp = ExtResource("2_ec3fj")
-shader_parameter/texture_sss_noise = ExtResource("6_4376w")
 shader_parameter/translucency = false
 shader_parameter/translucency_strength = 0.75
 shader_parameter/texture_translucency_color = ExtResource("8_4376w")

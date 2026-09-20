@@ -1,11 +1,10 @@
-[gd_resource type="ShaderMaterial" load_steps=8 format=3 uid="uid://bok8104w80smq"]
+[gd_resource type="ShaderMaterial" load_steps=7 format=3 uid="uid://bok8104w80smq"]
 
 [ext_resource type="Shader" uid="uid://rwmp12dnfv7m" path="res://HumanShaders/skin_shader.gdshader" id="1_8yon7"]
 [ext_resource type="Texture2D" uid="uid://j0b7hx3dn2o8" path="res://Models/HumanHead/InfiniteScan/Images/Infinite-Level_02_AO3.png" id="2_8yon7"]
 [ext_resource type="Texture2D" uid="uid://dpa1a3ensid5" path="res://Models/HumanHead/InfiniteScan/Images/Map-COL.jpg" id="4_22rnj"]
 [ext_resource type="Texture2D" uid="uid://q081egd4y1v" path="res://HumanShaders/Resources/MicroDetail/skin_micro_nrm_ao.png" id="4_jypbg"]
 [ext_resource type="Texture2D" uid="uid://cf72xwb6rqlt" path="res://Models/HumanHead/InfiniteScan/Infinite-Level_02_NRM_AO_4k.png" id="6_wv05w"]
-[ext_resource type="Texture2D" uid="uid://bmxxqd0d8ioy3" path="res://HumanShaders/Resources/InterleavedGradientNoise.png" id="7_6g15d"]
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_kuytg"]
 use_hdr = true
@@ -39,7 +38,6 @@ shader_parameter/skin_fallof_smoothness = 1.0
 shader_parameter/tinted_shadow_penumbra = false
 shader_parameter/old_lightwarp_fallof = false
 shader_parameter/lightwarp = SubResource("GradientTexture1D_kuytg")
-shader_parameter/texture_sss_noise = ExtResource("7_6g15d")
 shader_parameter/translucency = false
 shader_parameter/translucency_strength = 0.75
 shader_parameter/uv1_scale = Vector3(1, 1, 1)

@@ -57,7 +57,6 @@ uniform float skin_fallof_smoothness : hint_range(0.7, 2.0, 0.01) = 1.0;
 uniform bool tinted_shadow_penumbra = false;
 uniform bool old_lightwarp_fallof = false;
 uniform sampler2D lightwarp : source_color, filter_linear, repeat_disable;
-uniform sampler2D texture_sss_noise : filter_linear, repeat_enable, source_color;
 
 
 group_uniforms translucency;
@@ -107,20 +106,20 @@ vec3 custom_normal(vec3 normal_map) {
 	return normalize(TBN * normal_tangent);
 }
 
-float ign_noise(vec2 uv) {
+float ig_noise(vec2 uv) {
 	return fract(52.9829189 * fract(dot(uv, vec2(0.06711056, 0.00583715))));
 }
 
 float halton(int index, int base) {
 	float f = 1.0;
 	float result = 0.0;
-	
+
 	while (index > 0) {
 		f /= float(base);
 		result += f * float(index % base);
 		index = index / base;
 	}
-	
+
 	return result;
 }
 
@@ -169,12 +168,12 @@ void fragment() {
 	//float spec = max(dot(NORMAL, LIGHT_VERTEX * LIGHT_VERTEX), 0.0);
 
 	//ALBEDO = vec3(1.);
-	
+
 	//SPECULAR = clamp(specular, 0.,1.);
 	if (use_ambient_occlusion){
 		SPECULAR *= ao;
 	}
-	
+
 	vec4 roughness_texture_channel = vec4(0.0, 1.0, 0.0, 0.0);
 	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
 	ROUGHNESS = clamp(roughness_tex * roughness, 0.,1.);
@@ -204,8 +203,8 @@ void fragment() {
 			if (use_noise){
 				vec2 pixel_uv = floor(FRAGCOORD.xy);
 				vec2 frame_jitter = halton2(frame_index % 1024);
-				float noise = ign_noise(pixel_uv + frame_jitter * 1024.0);
-				//noise = ign_noise(pixel_uv);
+				float noise = ig_noise(pixel_uv + frame_jitter * 1024.0);
+				//noise = ig_noise(pixel_uv);
 				sss_strength_value *= noise * 2.0;
 			}
 			SSS_STRENGTH = sss_strength_value * texture(ambient_occlusion_texture, base_uv).r * smooth_depth;
@@ -249,15 +248,15 @@ float DiffuseBurleySkin(sampler2D normal_map, vec2 uv, float NdotL, float NdotV,
 	vec3 dn_r = custom_normal(textureLod(texture_normal, uv, (1.*s)).rgb);
 	vec3 dn_g = custom_normal(textureLod(texture_normal, uv, (0.8*s)).rgb);
 	vec3 dn_b = custom_normal(textureLod(texture_normal, uv, (0.7*s)).rgb);
-		
+
 	//Include micro normals in the mix:
 	vec3 m_normal = texture(texture_micro_detail, uv * micro_detail_scale).rgb;
 	m_normal = mix(vec3(.5,.5,1.), vec3(m_normal.xy, 1.), micro_normal_strength);
-	
+
 	dn_g = normal_blending(dn_g, m_normal);
 	dn_b = normal_blending(dn_b, m_normal);
 	////
-	
+
 	float f90 = 2.0 * linear_roughness * LdotH * LdotH - 0.5;
 	float l_scatter = 1.0 + f90 * SchlickFresnel(NdotL);
 	float v_scatter = 1.0 + f90 * SchlickFresnel(NdotV);
@@ -293,18 +292,21 @@ void light()
 		vec3 dn_r = custom_normal(textureLod(texture_normal, UV, (1.*s) * normal_depth).rgb);
 		vec3 dn_g = custom_normal(textureLod(texture_normal, UV, (0.8*s) * normal_depth).rgb);
 		vec3 dn_b = custom_normal(textureLod(texture_normal, UV, (0.7*s) * normal_depth).rgb);
-		
+		//vec3 dn_r = custom_normal(texture(texture_normal, UV + ((ig_noise(floor(FRAGCOORD.xy) * 2.0 - 1.0) * 0.002))).rgb);
+		//vec3 dn_g = custom_normal(texture(texture_normal, UV + ((ig_noise(floor(FRAGCOORD.xy) * 2.0 - 1.0) * 0.003))).rgb);
+		//vec3 dn_b = custom_normal(texture(texture_normal, UV + ((ig_noise(floor(FRAGCOORD.xy) * 2.0 - 1.0) * 0.005))).rgb);
+
 		//Include micro normals in the mix:
 		vec3 m_normal = texture(texture_micro_detail, UV * micro_detail_scale).rgb;
 		m_normal = mix(vec3(.5,.5,1.), vec3(m_normal.xy, 1.), micro_normal_strength);
-		
+
 		dn_g = normal_blending(dn_g, m_normal);
 		dn_b = normal_blending(dn_b, m_normal);
 		////
-		
+
 		float spec_smoothness = min(SPECULAR_AMOUNT * 0.75 + 0.25, 1.0);
 		float sf = skin_fallof_smoothness / (spec_smoothness);
-		
+
 		float wrapped_r = smoothstep(0.4 /sf, 1.2 *sf, dot(dn_r, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_g = smoothstep(0.425 /sf, 1.2 *sf, dot(dn_g, LIGHT) * wrap + (1.0-wrap));
 		float wrapped_b = smoothstep(0.44 /sf, 1.2 *sf, dot(dn_b, LIGHT) * wrap + (1.0-wrap));
@@ -312,15 +314,15 @@ void light()
 		if (use_ambient_occlusion){
 			wrapped_rgb *= (ao * ao_block_light + (1.-ao_block_light));
 		}
-		
+
 		float RNdotL = clamp(dot(RAW_NORMAL, LIGHT), 0.0, 1.0);
 		RNdotL = mix (RNdotL, RNdotL * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
 		float RNdotV = clamp(dot(RAW_NORMAL, VIEW), 0.0, 1.0);
 		RNdotV = mix (RNdotV, RNdotV * 0.5 + 0.5, clamp(sf - 1.0, 0.0, 1.0));
-		
-		float f90 = 3.0 * roughness * LdotH * LdotH - 0.5;
+
+		float f90 = 2.5 * roughness * LdotH * LdotH - 0.5;
 		float l_scatter = 1.0 + f90 * SchlickFresnel(RNdotL);
-		float v_scatter = 1.0 + f90 * SchlickFresnel(RNdotV) * 3.0;
+		float v_scatter = 1.0 + f90 * SchlickFresnel(RNdotV) * 2.0;
 		float combined = v_scatter * l_scatter;
 
 		diff_light = wrapped_rgb * combined;
@@ -339,10 +341,10 @@ void light()
 		}
 		diff_light = lw;
 	}
-	
+
 	//diff_light += vec3(DiffuseBurleySkin(texture_normal, UV, NdotL, NdotV, LdotH, ROUGHNESS));
 	//diff_light += clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * ATTENUATION * (lightColor / (TAU* 2.0));
-	
+
 	//Tint shadow penumbra:
 	vec3 att = overlay(min(vec3(ATTENUATION), 1.), vec3(1.2,.8,.6)) * max(ATTENUATION, 0.5);
 	if (tinted_shadow_penumbra){att = att;} else{att = vec3(ATTENUATION);}
@@ -350,44 +352,43 @@ void light()
 	DIFFUSE_LIGHT += diff_light * att * lightColor;
 
 	if (translucency){
-		float translucency_dot = dot(VIEW,-(LIGHT + NORMAL * .4));
+		float translucency_dot = dot(VIEW,-(LIGHT + RAW_NORMAL * .4));
 		vec2 t_col_coord = vec2(sss_tex * translucency_dot * translucency_strength, 0.0);
 		vec3 t_color = texture(texture_translucency_color, t_col_coord).rgb;
-		vec3 translucent = max(translucency_dot * t_color, 0.0) * lightColor;
-		//translucency *= max(translucency_strength, 1.);
+		vec3 translucent = max(t_color, 0.0) * lightColor * 0.5;
 
-		DIFFUSE_LIGHT += translucent;
+		DIFFUSE_LIGHT += translucent * clamp(att + 0.3, 0.0, 1.0);
 	}
-	
+
 	// Specular light (Schlick-GGX).
 	vec3 f0 = SchlickBaseReflectivity();
 	float LdotH5 = SchlickFresnel(LdotH);
 	float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
 	vec3 F = f0 + (f90 - f0) * LdotH5;
-	
+
 	float ggxAlpha = ROUGHNESS * ROUGHNESS;
 	float D = DistributionGGX(NdotH, ggxAlpha);
 	float G = GeometryGGX(NdotL, NdotV, ggxAlpha);
-	
+
 	vec3 specularBRDF;
-	
+
 	if (!double_specularity) {
 		specularBRDF = max(NdotL * D * G * F, 0.0);
 	}
 	else {
 		float D = DistributionGGX(NdotH, ggxAlpha + .15);
 		specularBRDF = max(NdotL * D * G * F, 0.0) * 2.0;
-		
+
 		float D2 = DistributionGGX(NdotH, ggxAlpha * 0.5);
 		vec3 specularBRDF2 = max(NdotL * D2 * G * F, 0.0);
-		
+
 		specularBRDF = (specularBRDF + specularBRDF2) / 2.0;
 	}
 	SPECULAR_LIGHT += specularBRDF * LIGHT_COLOR * ATTENUATION * (SPECULAR_AMOUNT + 0.1);
-	
+
 	if (use_ambient_occlusion){
 		SPECULAR_LIGHT *= ao * ao_block_light + (1.-ao_block_light);
 	}
-	
+
 	//SPECULAR_LIGHT = vec3(0.0);
 }

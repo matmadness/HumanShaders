@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=10 format=3 uid="uid://bcow8qj5qfkbh"]
+[gd_resource type="ShaderMaterial" load_steps=9 format=3 uid="uid://bcow8qj5qfkbh"]
 
 [ext_resource type="Shader" uid="uid://rwmp12dnfv7m" path="res://HumanShaders/skin_shader.gdshader" id="1_ftndh"]
 [ext_resource type="Texture2D" uid="uid://bwhw8gfdxtmjd" path="res://Models/HumanHead/EmilyHeadScan/00_diffuse_unlit_raw_4k.png" id="2_lghnt"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://bg5wg2pb2tpm7" path="res://HumanShaders/Resources/lightwarp_skin1.tres" id="3_s2iwt"]
 [ext_resource type="Texture2D" uid="uid://dxpv2if46fowj" path="res://Models/HumanHead/EmilyHeadScan/00_normal_spec_unpainted_4k.png" id="4_f1wt6"]
 [ext_resource type="Texture2D" uid="uid://q081egd4y1v" path="res://HumanShaders/Resources/MicroDetail/skin_micro_nrm_ao.png" id="5_s2iwt"]
-[ext_resource type="Texture2D" uid="uid://bmxxqd0d8ioy3" path="res://HumanShaders/Resources/InterleavedGradientNoise.png" id="7_xjn67"]
 [ext_resource type="Texture2D" uid="uid://dtpdooyoja2k0" path="res://Models/HumanHead/EmilyHeadScan/00_sss_unpainted_1k.png" id="8_tv23y"]
 [ext_resource type="Texture2D" uid="uid://d28htgdgv762y" path="res://HumanShaders/Resources/translucency_gradient.tres" id="9_vsn5t"]
 
@@ -15,7 +14,7 @@ render_priority = 0
 shader = ExtResource("1_ftndh")
 shader_parameter/albedo = Color(1, 1, 1, 1)
 shader_parameter/texture_albedo = ExtResource("2_lghnt")
-shader_parameter/roughness = 0.50000002375
+shader_parameter/roughness = 0.6000000285
 shader_parameter/specular = 0.6999999843536
 shader_parameter/double_specularity = true
 shader_parameter/metallic = 0.0
@@ -39,7 +38,6 @@ shader_parameter/skin_fallof_smoothness = 1.0
 shader_parameter/tinted_shadow_penumbra = false
 shader_parameter/old_lightwarp_fallof = false
 shader_parameter/lightwarp = ExtResource("3_s2iwt")
-shader_parameter/texture_sss_noise = ExtResource("7_xjn67")
 shader_parameter/translucency = true
 shader_parameter/translucency_strength = 0.249999994412
 shader_parameter/texture_translucency = ExtResource("8_tv23y")

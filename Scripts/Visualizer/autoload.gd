@@ -25,4 +25,4 @@ func _input(event: InputEvent) -> void:
 		get_tree().quit()
 		
 func _process(_delta: float) -> void:
-	RenderingServer.global_shader_parameter_set("frame_index", Engine.get_frames_drawn() * 2.0)
+	RenderingServer.global_shader_parameter_set("frame_index", Engine.get_frames_drawn())
